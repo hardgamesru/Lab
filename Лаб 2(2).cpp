@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 
-int fields1, animals1;
+int fields1;
 
 class Plant {
 private:
@@ -35,33 +35,7 @@ public:
     }
 };
 
-class Animal {
-private:
-    std::string name;
-    int age; // Возраст в годах
-    int productivity; // Продуктивность (например, количество молока в день)
 
-public:
-    Animal(std::string name = "None", int age = 0, int productivity = 0)
-        : name(name), age(age), productivity(productivity) {}
-
-    void inputAnimal() {
-        std::cout << "Введите название животного: ";
-        std::cin >> name;
-        std::cout << "Введите возраст животного: ";
-        std::cin >> age;
-        std::cout << "Введите количество кг продукта, которое производит животное: ";
-        std::cin >> productivity;
-    }
-
-    void printAnimal() const {
-        std::cout << "Животное: " << name << ", Возраст: " << age << " лет, Количество продукта в кг: " << productivity << std::endl;
-    }
-
-    int getProductivityAnimal() const {
-        return productivity;
-    }
-};
 
 class Field {
 private:
@@ -115,30 +89,23 @@ public:
         : plantYield(plantYield), animalProducts(animalProducts) {}
 
     void printStorage() const {
-        std::cout << "\nСклад: Урожай растений: " << plantYield << ", Продукты животных: " << animalProducts << std::endl;
+        std::cout << "\nСклад: Урожай растений: " << plantYield << std::endl;
     }
 
     void addPlantYieldStorage(int yield) {
         plantYield += yield;
     }
 
-    void addAnimalProductsStorage(int products) {
-        animalProducts += products;
-    }
 };
 
 class Farm {
 private:
     Field fields[5];
-    Animal animals[5];
     Storage storage;
 public:
     Farm() {
         for (int i = 0; i < fields1; i++) {
             fields[i] = Field(i);
-        }
-        for (int i = 0; i < animals1; i++) {
-            animals[i] = Animal();
         }
     }
 
@@ -146,10 +113,6 @@ public:
         for (int i = 0; i < fields1; ++i) {
             std::cout << "\nВведите данные для поля\n";
             fields[i].inputField();
-        }
-        for (int i = 0; i < animals1; ++i) {
-            std::cout << "\nВведите данные для животного\n";
-            animals[i].inputAnimal();
         }
     }
 
@@ -159,19 +122,12 @@ public:
         for (int i = 0; i < fields1; ++i) {
             fields[i].printField();
         }
-        std::cout << "\nЖивотные:\n";
-        for (int i = 0; i < animals1; ++i) {
-            animals[i].printAnimal();
-        }
         storage.printStorage();
     }
 
     void logic() {
         for (int i = 0; i < 2; ++i) {
             storage.addPlantYieldStorage(fields[i].harvestField());
-        }
-        for (int i = 0; i < 2; ++i) {
-            storage.addAnimalProductsStorage(animals[i].getProductivityAnimal());
         }
         printf("\nПередача на склад\n");
     }
@@ -184,8 +140,6 @@ int main() {
     printf("Ферма\n");
     printf("Введите количество полей:\n");
     scanf("%d", &fields1);
-    printf("Введите количество животных:\n");
-    scanf("%d", &animals1);
     Farm myFarm;
     // Ввод данных о ферме
     myFarm.input();
@@ -200,7 +154,7 @@ int main() {
     myFarm.print();
 
     // Работа с динамическим массивом объектов класса
-    fields1 = 1; animals1 = 1;
+    fields1 = 1;
     Farm* dynamicFarms = new Farm[2];
     printf("\nРабота с динамическим массивом объектов класса\n");
     for (int i = 0; i < 2; ++i) {
