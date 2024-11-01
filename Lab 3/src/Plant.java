@@ -1,37 +1,47 @@
 import java.util.Scanner;
 
-public class Plant {
+class Plant {
     private String name;
-    private int growthTime; // Time in days
-    private int yield;
+    private int growthTime; // Время роста в днях
+    private int yield; // Урожайность
+    private int price; // Цена
 
-    public Plant(String name, int growthTime, int yield) {
+    public Plant(String name, int growthTime, int yield, int price) {
         this.name = name;
         this.growthTime = growthTime;
         this.yield = yield;
+        this.price = price;
     }
 
     public Plant() {
-        this.name = "None";
-        this.growthTime = 0;
-        this.yield = 0;
+        this("Нет растения", 0, 0, 0);
     }
 
     public void inputPlant() {
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         System.out.print("Введите название растения: ");
-        this.name = scanner.next();
+        name = sc.nextLine();
         System.out.print("Введите время роста (в днях): ");
-        this.growthTime = scanner.nextInt();
-        System.out.print("Введите урожаемость: ");
-        this.yield = scanner.nextInt();
+        growthTime = sc.nextInt();
+        System.out.print("Введите урожайность: ");
+        yield = sc.nextInt();
+        System.out.print("Введите цену: ");
+        price = sc.nextInt();
     }
 
     public void printPlant() {
-        System.out.println("Растение: " + name + ", Время роста: " + growthTime + " дней, Урожаемость: " + yield);
+        System.out.println("Растение: " + name + ", Время роста: " + growthTime + " дней, Урожайность: " + yield + ", Цена: " + price + " руб");
     }
 
-    public int getYieldPlant() {
+    public String getPlantName() {
+        return name;
+    }
+
+    public int getPlantYield() {
         return yield;
+    }
+
+    public int getPlantPrice() {
+        return price;
     }
 }

@@ -4,15 +4,17 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         System.out.println("Ферма");
         System.out.print("Введите количество полей: ");
-        int numFields = scanner.nextInt();
+        int fields1 = sc.nextInt();
+        Farm myFarm = new Farm(fields1);
 
-        Farm myFarm = new Farm(numFields);
-        myFarm.input(numFields);
-        myFarm.print(numFields);
-        myFarm.logic(numFields);
-        myFarm.print(numFields);
+        myFarm.input();
+        myFarm.print();
+        myFarm.logic();
+        myFarm.print();
+        myFarm.sell();
+        myFarm.print();
     }
 }

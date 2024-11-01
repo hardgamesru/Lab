@@ -3,7 +3,7 @@ import java.util.Scanner;
 class Field {
     private int id;
     private Plant plant;
-    private boolean isPlanted;
+    private boolean isPlanted; // true если поле засажено, false если нет
 
     public Field(int id, Plant plant, boolean isPlanted) {
         this.id = id;
@@ -12,17 +12,15 @@ class Field {
     }
 
     public Field() {
-        this.id = 0;
-        this.plant = new Plant();
-        this.isPlanted = false;
+        this(0, new Plant(), false);
     }
 
     public void inputField() {
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         System.out.print("Введите номер поля: ");
-        this.id = scanner.nextInt();
-        System.out.print("Поле засажено? (1 - yes, 0 - no): ");
-        this.isPlanted = scanner.nextInt() == 1;
+        id = sc.nextInt();
+        System.out.print("Поле засажено? (1 - да, 0 - нет): ");
+        isPlanted = sc.nextInt() == 1;
         if (isPlanted) {
             plant.inputPlant();
         } else {
@@ -31,7 +29,7 @@ class Field {
     }
 
     public void printField() {
-        System.out.print("Поле " + id + ": ");
+        System.out.print("\nПоле " + id + ": ");
         if (isPlanted) {
             plant.printPlant();
         } else {
@@ -42,8 +40,11 @@ class Field {
     public int harvestField() {
         if (isPlanted) {
             isPlanted = false;
-            return plant.getYieldPlant();
         }
         return 0;
+    }
+
+    public Plant getPlant() {
+        return plant;
     }
 }

@@ -1,37 +1,49 @@
 import java.util.Scanner;
 
-public class Farm {
-    private Field[] fields = new Field[5];
-    private Storage storage;
+class Farm {
+    private Field[] fields;
+    private Storage[] storage;
+    private int money;
 
-    public Farm(int numFields) {
-        for (int i = 0; i < numFields; i++) {
+    public Farm(int fields1) {
+        fields = new Field[fields1];
+        storage = new Storage[fields1];
+        for (int i = 0; i < fields1; i++) {
             fields[i] = new Field(i, new Plant(), false);
-        }
-        storage = new Storage();
-    }
-
-    public void input(int numFields) {
-        Scanner scanner = new Scanner(System.in);
-        for (int i = 0; i < numFields; i++) {
-            System.out.println("\nВведите данные для поля");
-            fields[i].inputField();
+            storage[i] = new Storage();
         }
     }
 
-    public void print(int numFields) {
-        System.out.println("\nИнформация о ферме");
+    public void input() {
+        for (Field field : fields) {
+            System.out.println("\nВведите данные для поля\n");
+            field.inputField();
+        }
+    }
+
+    public void print() {
+        System.out.println("\nИнформация о ферме\n");
         System.out.println("Поля:");
-        for (int i = 0; i < numFields; i++) {
+        for (int i = 0; i < fields.length; i++) {
             fields[i].printField();
+            storage[i].printStorage(i);
         }
-        storage.printStorage();
     }
 
-    public void logic(int numFields) {
-        for (int i = 0; i < numFields; i++) {
-            storage.addPlantYieldStorage(fields[i].harvestField());
+    public void logic() {
+        for (int i = 0; i < fields.length; i++) {
+            storage[i].addPlant(fields[i].getPlant());
+            fields[i].harvestField();
         }
-        System.out.println("\nПередача на склад");
+        System.out.println("\nПередача на склады\n");
+    }
+
+    public void sell() {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nУрожай какого склада вы бы хотели продать?: ");
+        int sellnumber = sc.nextInt();
+        System.out.println("\nПродажа урожая со склада " + sellnumber);
+        money = storage[sellnumber - 1].sellStorage();
+        System.out.println("\n\nОбщее количество денег - " + money + "\n");
     }
 }
