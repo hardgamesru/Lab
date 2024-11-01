@@ -12,10 +12,11 @@ private:
     std::string name;
     int growthTime; // Время роста в днях
     int yield; // Урожайность
+    int price; // Цена
 
 public:
-    Plant(std::string name = "None", int growthTime = 0, int yield = 0)
-        : name(name), growthTime(growthTime), yield(yield) {}
+    Plant(std::string name = "Нет растения", int growthTime = 0, int yield = 0, int price = 0)
+        : name(name), growthTime(growthTime), yield(yield), price(price) {}
 
     void inputPlant() {
         std::cout << "Введите название растения: ";
@@ -24,14 +25,24 @@ public:
         std::cin >> growthTime;
         std::cout << "Введите урожайность: ";
         std::cin >> yield;
+        std::cout << "Введите цену: ";
+        std::cin >> price;
     }
 
     void printPlant() const {
-        std::cout << "Растение: " << name << ", Время роста: " << growthTime << " дней, Урожайность: " << yield << std::endl;
+        std::cout << "Растение: " << name << ", Время роста: " << growthTime << " дней, Урожайность: " << yield << " , Цена: " << price << "руб" <<std::endl;
     }
 
-    int getYieldPlant() const {
+    std::string getPlantName() const {
+        return name;
+    }
+
+    int getPlantYield() const {
         return yield;
+    }
+
+    int getPlantPrice() const {
+        return price;
     }
 };
 
@@ -61,7 +72,7 @@ public:
     }
 
     void printField() const {
-        std::cout << "Поле " << id << ": ";
+        std::cout << "\nПоле " << id << ": ";
         if (isPlanted) {
             plant.printPlant();
         }
@@ -73,35 +84,47 @@ public:
     int harvestField() {
         if (isPlanted) {
             isPlanted = false;
-            return plant.getYieldPlant();
         }
         return 0;
+    }
+
+    Plant getPlant() {
+        return plant;
     }
 };
 
 class Storage {
 private:
+    Plant plant;
+    std::string plantName;
     int plantYield;
-    int animalProducts;
+    int plantPrice;
+    int money;
 
 public:
-    Storage(int plantYield = 0, int animalProducts = 0)
-        : plantYield(plantYield), animalProducts(animalProducts) {}
+    Storage(Plant plant = Plant(), std::string plantName = "Нет растения", int plantYield = 0, int plantPrice = 0, int money = 0)
+        : plantYield(plantYield), plantPrice(plantPrice) {}
 
-    void printStorage() const {
-        std::cout << "\nСклад: Урожай растений: " << plantYield << std::endl;
+    void printStorage(int i) const {
+        std::cout << "\nСклад" << i <<": Название растения : " << plant.getPlantName() << ", Урожаемость растения : " << plant.getPlantYield() << ", Цена за единицу : " << plant.getPlantPrice() << " руб." << std::endl;
     }
 
-    void addPlantYieldStorage(int yield) {
-        plantYield += yield;
+    void addPlant(Plant plant1){
+        plant = plant1;
     }
 
+    int sellStorage() {
+        money = plant.getPlantYield()* plant.getPlantPrice();
+        plant = Plant();
+        return money;
+    }
 };
 
 class Farm {
 private:
     Field fields[5];
-    Storage storage;
+    Storage storage[5];
+    int money;
 public:
     Farm() {
         for (int i = 0; i < fields1; i++) {
@@ -121,16 +144,28 @@ public:
         std::cout << "Поля:\n";
         for (int i = 0; i < fields1; ++i) {
             fields[i].printField();
+            storage[i].printStorage(i);
         }
-        storage.printStorage();
+        
     }
 
     void logic() {
-        for (int i = 0; i < 2; ++i) {
-            storage.addPlantYieldStorage(fields[i].harvestField());
+        for (int i = 0; i < fields1; ++i) {
+            storage[i].addPlant(fields[i].getPlant());
+            fields[i].harvestField();
         }
-        printf("\nПередача на склад\n");
+        printf("\nПередача на склады\n");
     }
+
+    void sell() {
+        int sellnumber, money;
+        printf("\nУрожай какого склада вы бы хотели продать?: ");
+        std::cin >> sellnumber;
+        printf("\nПродажа урожая со склада %d", sellnumber);
+        money = storage[sellnumber-1].sellStorage();
+        printf("\n\nОбщее количество денег - %d\n", money);
+    }
+    
 };
 
 int main() {
@@ -153,6 +188,10 @@ int main() {
     // Выводим обновленную информацию о ферме
     myFarm.print();
 
+    myFarm.sell();
+
+    myFarm.print();
+    /*
     // Работа с динамическим массивом объектов класса
     fields1 = 1;
     Farm* dynamicFarms = new Farm[2];
@@ -182,6 +221,6 @@ int main() {
         dynamicFarmArray[i]->print();
         delete dynamicFarmArray[i];
     }
-
+    */
     return 0;
 }
