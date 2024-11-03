@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 class Field {
     private int id;
     private Plant plant;
@@ -16,11 +14,10 @@ class Field {
     }
 
     public void inputField() {
-        Scanner sc = new Scanner(System.in);
         System.out.print("Введите номер поля: ");
-        id = sc.nextInt();
+        id = Help.readInt();
         System.out.print("Поле засажено? (1 - да, 0 - нет): ");
-        isPlanted = sc.nextInt() == 1;
+        isPlanted = Help.readInt() == 1;
         if (isPlanted) {
             plant.inputPlant();
         } else {

@@ -44,6 +44,7 @@ class Farm {
         int sellnumber = sc.nextInt();
         System.out.println("\nПродажа урожая со склада " + sellnumber);
         money = storage[sellnumber - 1].sellStorage();
-        System.out.println("\n\nОбщее количество денег - " + money + "\n");
+        System.out.println("\n\nКоличество денег с продажи склада - " + money + "\n");
+        System.out.println("\nОбщее количество денег с продаж " + Storage.getAllmoney() + ", количество продаж - " + Storage.getSellcount() + "\n");
     }
 }

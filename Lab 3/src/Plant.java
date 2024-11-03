@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 class Plant {
     private String name;
     private int growthTime; // Время роста в днях
@@ -18,15 +16,14 @@ class Plant {
     }
 
     public void inputPlant() {
-        Scanner sc = new Scanner(System.in);
         System.out.print("Введите название растения: ");
-        name = sc.nextLine();
+        name = Help.readString();
         System.out.print("Введите время роста (в днях): ");
-        growthTime = sc.nextInt();
+        growthTime = Help.readInt();
         System.out.print("Введите урожайность: ");
-        yield = sc.nextInt();
+        yield = Help.readInt();
         System.out.print("Введите цену: ");
-        price = sc.nextInt();
+        price = Help.readInt();
     }
 
     public void printPlant() {

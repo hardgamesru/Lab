@@ -4,6 +4,8 @@ class Storage {
     private int plantYield;
     private int plantPrice;
     private int money;
+    private static int sellcount;
+    private static int allmoney;
 
     public Storage(Plant plant, String plantName, int plantYield, int plantPrice, int money) {
         this.plant = plant;
@@ -15,10 +17,15 @@ class Storage {
 
     public Storage() {
         this(new Plant(), "Нет растения", 0, 0, 0);
+    } // демонстрация разумного использования оператора this
+
+    static{
+        sellcount = 0;
+        allmoney = 0;
     }
 
     public void printStorage(int i) {
-        System.out.println("\nСклад " + i + ": Название растения : " + plant.getPlantName() + ", Урожаемость растения : " + plant.getPlantYield() + ", Цена за единицу : " + plant.getPlantPrice() + " руб.");
+        System.out.println("\nСклад " + (i + 1) + ": Название растения : " + plant.getPlantName() + ", Урожаемость растения : " + plant.getPlantYield() + ", Цена за единицу : " + plant.getPlantPrice() + " руб.");
     }
 
     public void addPlant(Plant plant) {
@@ -27,7 +34,18 @@ class Storage {
 
     public int sellStorage() {
         money = plant.getPlantYield() * plant.getPlantPrice();
+        allmoney += money;
+        sellcount++;
         plant = new Plant();
         return money;
     }
+
+    public static int getSellcount() {
+        return sellcount;
+    }
+
+    public static int getAllmoney() {
+        return allmoney;
+    }
+
 }
