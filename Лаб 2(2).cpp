@@ -20,17 +20,17 @@ public:
 
     void inputPlant() {
         std::cout << "Введите название растения: ";
-        std::cin >> name;
+        std::cin >> this->name; // this для повышения читаемости
         std::cout << "Введите время роста (в днях): ";
-        std::cin >> growthTime;
+        std::cin >> this->growthTime;
         std::cout << "Введите урожайность: ";
-        std::cin >> yield;
+        std::cin >> this->yield;
         std::cout << "Введите цену: ";
-        std::cin >> price;
+        std::cin >> this->price;
     }
 
     void printPlant() const {
-        std::cout << "Растение: " << name << ", Время роста: " << growthTime << " дней, Урожайность: " << yield << " , Цена: " << price << "руб" <<std::endl;
+        std::cout << "Растение: " << name << ", Время роста: " << growthTime << " дней, Урожайность: " << yield << " , Цена: " << price << " руб." << std::endl;
     }
 
     std::string getPlantName() const {
@@ -44,9 +44,26 @@ public:
     int getPlantPrice() const {
         return price;
     }
+    // Разумное использование оператора this, оператора +
+    Plant operator+(const Plant& other) const {
+        return Plant(this->name + " + " + other.name,
+            this->growthTime,
+            this->yield + other.yield,
+            (this->price + other.price) / 2); // Средняя цена
+    }
+
+    Plant& operator++() {
+        ++yield; // Увеличиваем урожайность на 1
+        return *this; // Возвращаем текущий объект
+    }
+
+    Plant operator++(int) {
+        Plant temp = *this; // Сохраняем текущее состояние
+        ++yield; // Увеличиваем урожайность на 1
+        return temp; // Возвращаем старое состояние
+    }
+
 };
-
-
 
 class Field {
 private:
@@ -88,10 +105,21 @@ public:
         return 0;
     }
 
-    Plant getPlant() {
+    Plant getPlant() const {
         return plant;
     }
+
+    bool isFieldPlanted() const {
+        return isPlanted;
+    }
+
+    friend bool compareYield(const Plant& p1, const Plant& p2); // Дружественная функция
+
 };
+
+bool compareYield(const Plant& p1, const Plant& p2) {
+    return p1.getPlantYield() > p2.getPlantYield();
+}
 
 class Storage {
 private:
@@ -99,26 +127,47 @@ private:
     std::string plantName;
     int plantYield;
     int plantPrice;
-    int money;
+    int money; // выручка
+    static int sellcount; // статическая переменная для количества продаж
+    static int allmoney; // выручка от всех продаж
 
 public:
     Storage(Plant plant = Plant(), std::string plantName = "Нет растения", int plantYield = 0, int plantPrice = 0, int money = 0)
         : plantYield(plantYield), plantPrice(plantPrice) {}
 
     void printStorage(int i) const {
-        std::cout << "\nСклад" << i <<": Название растения : " << plant.getPlantName() << ", Урожаемость растения : " << plant.getPlantYield() << ", Цена за единицу : " << plant.getPlantPrice() << " руб." << std::endl;
+        std::cout << "\nСклад " << i + 1 << ": Название растения : " << plant.getPlantName() << ", Урожаемость растения : " << plant.getPlantYield() << ", Цена за единицу : " << plant.getPlantPrice() << " руб." << std::endl;
     }
 
-    void addPlant(Plant plant1){
+    void addPlant(Plant plant1) {
         plant = plant1;
     }
 
-    int sellStorage() {
-        money = plant.getPlantYield()* plant.getPlantPrice();
+    void sellStorage(int* money) {
+        *money = plant.getPlantYield() * plant.getPlantPrice();
+        allmoney += *money;
+        sellcount++;
         plant = Plant();
-        return money;
+    }
+
+    void sellStorageRef(int& money) {
+        money = plant.getPlantYield() * plant.getPlantPrice();
+        allmoney += money;
+        sellcount++;
+        plant = Plant();
+    }
+
+    static int getSellcount() {
+        return sellcount;
+    }
+
+    static int getAllmoney() {
+        return allmoney;
     }
 };
+
+int Storage::sellcount = 0;
+int Storage::allmoney = 0;
 
 class Farm {
 private:
@@ -140,13 +189,17 @@ public:
     }
 
     void print() const {
-        std::cout << "\nИнформация о ферме\n";
+        std::cout << "------------------\n";
+        std::cout << "Информация о ферме\n";
+        std::cout << "------------------\n";
         std::cout << "Поля:\n";
+        printf("------------------------------------------------------------------------------------------------");
         for (int i = 0; i < fields1; ++i) {
             fields[i].printField();
             storage[i].printStorage(i);
         }
-        
+        printf("------------------------------------------------------------------------------------------------");
+
     }
 
     void logic() {
@@ -157,22 +210,48 @@ public:
         printf("\nПередача на склады\n");
     }
 
-    void sell() {
-        int sellnumber, money;
+    void sell() { // через указатель
+        int sellnumber;
         printf("\nУрожай какого склада вы бы хотели продать?: ");
         std::cin >> sellnumber;
-        printf("\nПродажа урожая со склада %d", sellnumber);
-        money = storage[sellnumber-1].sellStorage();
-        printf("\n\nОбщее количество денег - %d\n", money);
+        printf("\nПродажа урожая со склада %d (через указатель)", sellnumber);
+        storage[sellnumber - 1].sellStorage(&money);
+        printf("\n\nКоличество денег с продажи склада- %d\n", money);
+        printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
     }
-    
+
+    void sellref() { // через ссылку
+        int sellnumber;
+        printf("\nУрожай какого склада вы бы хотели продать?: ");
+        std::cin >> sellnumber;
+        printf("\nПродажа урожая со склада %d (через ссылку)", sellnumber);
+        storage[sellnumber - 1].sellStorageRef(money);
+        printf("\n\nКоличество денег с продажи склада- %d\n", money);
+        printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
+    }
+
+    Plant findBestPlant() const {
+        Plant bestPlant = Plant(); // Начальное значение "Нет растения"
+        for (int i = 0; i < fields1; ++i) {
+            if (fields[i].isFieldPlanted()) {
+                const Plant& currentPlant = fields[i].getPlant();
+                if (compareYield(currentPlant, bestPlant)) {
+                    bestPlant = currentPlant;
+                }
+            }
+        }
+        return bestPlant;
+    }
+
 };
+
 
 int main() {
     setlocale(LC_ALL, "Russian");
     system("color F0");
-    
+
     printf("Ферма\n");
+
     printf("Введите количество полей:\n");
     scanf("%d", &fields1);
     Farm myFarm;
@@ -182,6 +261,14 @@ int main() {
     // Вывод информации о ферме
     myFarm.print();
 
+    Plant bestPlant = myFarm.findBestPlant();
+    if (bestPlant.getPlantName() != "Нет растения") {
+        std::cout << "\nЛучшее растение: " << bestPlant.getPlantName()
+            << " с урожайностью: " << bestPlant.getPlantYield() << std::endl;
+    }
+    else {
+        std::cout << "\nНет засаженных растений." << std::endl;
+    }
     // Выполняем основную логику 
     myFarm.logic();
 
@@ -191,6 +278,12 @@ int main() {
     myFarm.sell();
 
     myFarm.print();
+
+    myFarm.sellref();
+
+    myFarm.print();
+
+
     /*
     // Работа с динамическим массивом объектов класса
     fields1 = 1;
@@ -222,5 +315,25 @@ int main() {
         delete dynamicFarmArray[i];
     }
     */
+
+    /* Пример использования операторов +, ++
+    Plant plant1("Томаты", 60, 10, 50);
+    Plant plant2("Огурцы", 50, 15, 40);
+
+    // Используем оператор '+'
+    Plant combinedPlant = plant1 + plant2;
+    combinedPlant.printPlant();
+
+    // Используем префиксный оператор '++'
+    ++combinedPlant;
+    combinedPlant.printPlant();
+
+    // Используем постфиксный оператор '++'
+    Plant oldPlant = combinedPlant++;
+    oldPlant.printPlant(); // Выводим старое состояние
+    combinedPlant.printPlant(); // Выводим новое состояние
+
     return 0;
+
+    */
 }
