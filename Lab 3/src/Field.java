@@ -14,14 +14,25 @@ class Field {
     }
 
     public void inputField() {
-        System.out.print("Введите номер поля: ");
-        id = Help.readInt();
-        System.out.print("Поле засажено? (1 - да, 0 - нет): ");
-        isPlanted = Help.readInt() == 1;
-        if (isPlanted) {
-            plant.inputPlant();
-        } else {
-            plant = new Plant();
+        while (true) {
+            try {
+                System.out.print("Введите номер поля: ");
+                id = Help.readInt();
+                if (id <= 0) {
+                    throw new Exception("Номер поля должен быть положительным!");
+                }
+                System.out.print("Поле засажено? (1 - да, 0 - нет): ");
+                isPlanted = Help.readIntInRange(0, 1) == 1;
+                if (isPlanted) {
+                    plant.inputPlant();
+                } else {
+                    plant = new Plant();
+                }
+                break;
+            }
+            catch (Exception e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 

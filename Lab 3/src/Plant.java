@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 class Plant {
     private String name;
     private int growthTime; // Время роста в днях
@@ -16,14 +18,37 @@ class Plant {
     }
 
     public void inputPlant() {
-        System.out.print("Введите название растения: ");
-        name = Help.readString();
-        System.out.print("Введите время роста (в днях): ");
-        growthTime = Help.readInt();
-        System.out.print("Введите урожайность: ");
-        yield = Help.readInt();
-        System.out.print("Введите цену: ");
-        price = Help.readInt();
+        while (true) {
+            try {
+                System.out.print("Введите название растения: ");
+                name = Help.readString();
+                if (name.isEmpty()){
+                    throw new Exception("Название растения не может быть пустым!");
+                }
+
+                System.out.print("Введите время роста (в днях): ");
+                growthTime = Help.readInt();
+                if (growthTime <= 0){
+                    throw new Exception("Время роста должно быть положительным числом!");
+                }
+
+                System.out.print("Введите урожайность: ");
+                yield = Help.readInt();
+                if (yield <= 0){
+                    throw new Exception("Урожайность не может быть отрицательной!");
+                }
+
+                System.out.print("Введите цену: ");
+                price = Help.readInt();
+                if (yield <= 0){
+                    throw new Exception("Цена не может быть отрицательной!");
+                }
+                break;
+            }
+            catch(Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     public void printPlant() {

@@ -4,8 +4,46 @@
 #include <locale.h>
 #include <string>
 #include <iostream>
+#include <limits> // Для std::numeric_limits
+#include <stdexcept> // Для исключений
 
 int fields1;
+
+class Help {
+public:
+    // Метод для ввода целого числа с проверкой на корректность
+    static int inputInteger() {
+        int value;
+        while (true) {
+            std::cin >> value;
+
+            // Проверяем, не возникла ли ошибка ввода
+            if (std::cin.fail()) {
+                std::cin.clear(); // Очищаем флаг ошибки
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Очищаем буфер
+                std::cout << "Ошибка! Введите целое число." << std::endl;
+            }
+            else {
+                // Ввод корректен
+                return value;
+            }
+        }
+    }
+
+    // Метод для ввода целого числа с дополнительной проверкой диапазона
+    static int inputIntegerInRange(int min, int max) {
+        int value;
+        while (true) {
+            value = inputInteger(); // Используем первый метод для ввода числа
+            if (value >= min && value <= max) {
+                return value;
+            }
+            else {
+                std::cout << "Ошибка! Введите число в пределах от " << min << " до " << max << "." << std::endl;
+            }
+        }
+    }
+};
 
 class Plant {
 private:
@@ -19,14 +57,42 @@ public:
         : name(name), growthTime(growthTime), yield(yield), price(price) {}
 
     void inputPlant() {
-        std::cout << "Введите название растения: ";
-        std::cin >> this->name; // this для повышения читаемости
-        std::cout << "Введите время роста (в днях): ";
-        std::cin >> this->growthTime;
-        std::cout << "Введите урожайность: ";
-        std::cin >> this->yield;
-        std::cout << "Введите цену: ";
-        std::cin >> this->price;
+        while (true) {
+            try {
+                std::cout << "Введите название растения: ";
+
+                std::cin >> this->name; // this для повышения читаемости
+                if (this->name.empty()) {
+                    throw std::invalid_argument("Название растения не может быть пустым!");
+                }
+
+                std::cout << "Введите время роста (в днях): ";
+                this->growthTime = Help::inputInteger();
+                if (this->growthTime <= 0) {
+                    throw std::invalid_argument("Время роста должно быть положительным числом!");
+                }
+
+                std::cout << "Введите урожайность : ";
+                this->yield = Help::inputInteger();
+                if (this->yield < 0) {
+                    throw std::invalid_argument("Урожайность не может быть отрицательной!");
+                }
+
+                std::cout << "Введите цену: ";
+                this->price = Help::inputInteger();
+                if (this->price < 0) {
+                    throw std::invalid_argument("Цена не может быть отрицательной!");
+                }
+
+                break; // Если все данные введены корректно, выходим из цикла
+
+            }
+            catch (const std::invalid_argument& e) {
+                std::cout << "Ошибка: " << e.what() << std::endl;
+                std::cin.clear(); // Очищаем ошибку ввода
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Очищаем буфер ввода
+            }
+        }
     }
 
     void printPlant() const {
@@ -44,25 +110,6 @@ public:
     int getPlantPrice() const {
         return price;
     }
-    // Разумное использование оператора this, оператора +
-    Plant operator+(const Plant& other) const {
-        return Plant(this->name + " + " + other.name,
-            this->growthTime,
-            this->yield + other.yield,
-            (this->price + other.price) / 2); // Средняя цена
-    }
-
-    Plant& operator++() {
-        ++yield; // Увеличиваем урожайность на 1
-        return *this; // Возвращаем текущий объект
-    }
-
-    Plant operator++(int) {
-        Plant temp = *this; // Сохраняем текущее состояние
-        ++yield; // Увеличиваем урожайность на 1
-        return temp; // Возвращаем старое состояние
-    }
-
 };
 
 class Field {
@@ -76,15 +123,30 @@ public:
         : id(id), plant(plant), isPlanted(isPlanted) {}
 
     void inputField() {
-        std::cout << "Введите номер поля: ";
-        std::cin >> id;
-        std::cout << "Поле засажено? (1 - да, 0 - нет): ";
-        std::cin >> isPlanted;
-        if (isPlanted) {
-            plant.inputPlant();
-        }
-        else {
-            plant = Plant();
+        while (true) {
+            try {
+
+                std::cout << "Введите номер поля: ";
+                id = Help::inputInteger();
+                if (id <= 0) {
+                    throw std::out_of_range("Номер поля должен быть положительным!");
+                }
+
+                std::cout << "Поле засажено? (1 - да, 0 - нет): ";
+                isPlanted = Help::inputIntegerInRange(0, 1);
+                if (isPlanted) {
+                    plant.inputPlant();
+                }
+                else {
+                    plant = Plant();
+                }
+                break; // Если все данные введены корректно, выходим из цикла
+
+            }
+
+            catch (const std::out_of_range& e) {
+                std::cout << "Ошибка: " << e.what() << std::endl;
+            }
         }
     }
 
@@ -114,7 +176,6 @@ public:
     }
 
     friend bool compareYield(const Plant& p1, const Plant& p2); // Дружественная функция
-
 };
 
 bool compareYield(const Plant& p1, const Plant& p2) {
@@ -133,7 +194,7 @@ private:
 
 public:
     Storage(Plant plant = Plant(), std::string plantName = "Нет растения", int plantYield = 0, int plantPrice = 0, int money = 0)
-        : plantYield(plantYield), plantPrice(plantPrice) {}
+        : plantYield(plantYield), plantPrice(plantPrice), money(money) {}
 
     void printStorage(int i) const {
         std::cout << "\nСклад " << i + 1 << ": Название растения : " << plant.getPlantName() << ", Урожаемость растения : " << plant.getPlantYield() << ", Цена за единицу : " << plant.getPlantPrice() << " руб." << std::endl;
@@ -144,18 +205,28 @@ public:
     }
 
     void sellStorage(int* money) {
+        if (plant.getPlantName() == "Нет растения") {
+            throw std::runtime_error("Невозможно продать урожай, склад пуст!");
+        }
+
         *money = plant.getPlantYield() * plant.getPlantPrice();
         allmoney += *money;
         sellcount++;
-        plant = Plant();
+        plant = Plant(); // После продажи склад очищается
     }
 
+
     void sellStorageRef(int& money) {
+        if (plant.getPlantName() == "Нет растения") {
+            throw std::runtime_error("Невозможно продать урожай, склад пуст!");
+        }
+
         money = plant.getPlantYield() * plant.getPlantPrice();
         allmoney += money;
         sellcount++;
-        plant = Plant();
+        plant = Plant(); // После продажи склад очищается
     }
+
 
     static int getSellcount() {
         return sellcount;
@@ -212,23 +283,34 @@ public:
 
     void sell() { // через указатель
         int sellnumber;
-        printf("\nУрожай какого склада вы бы хотели продать?: ");
-        std::cin >> sellnumber;
-        printf("\nПродажа урожая со склада %d (через указатель)", sellnumber);
-        storage[sellnumber - 1].sellStorage(&money);
-        printf("\n\nКоличество денег с продажи склада- %d\n", money);
-        printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
+        try {
+            printf("\nУрожай какого склада вы бы хотели продать?: ");
+            sellnumber = Help::inputIntegerInRange(1, fields1);
+            printf("\nПродажа урожая со склада %d (через указатель)\n", sellnumber);
+            storage[sellnumber - 1].sellStorage(&money);
+            printf("\nКоличество денег с продажи склада- %d\n", money);
+            printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
+        }
+        catch (const std::runtime_error& e) {
+            std::cout << "Ошибка: " << e.what() << std::endl;
+        }
     }
 
     void sellref() { // через ссылку
         int sellnumber;
-        printf("\nУрожай какого склада вы бы хотели продать?: ");
-        std::cin >> sellnumber;
-        printf("\nПродажа урожая со склада %d (через ссылку)", sellnumber);
-        storage[sellnumber - 1].sellStorageRef(money);
-        printf("\n\nКоличество денег с продажи склада- %d\n", money);
-        printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
+        try {
+            printf("\nУрожай какого склада вы бы хотели продать?: ");
+            sellnumber = Help::inputIntegerInRange(1, fields1);
+            printf("\nПродажа урожая со склада %d (через ссылку)\n", sellnumber);
+            storage[sellnumber - 1].sellStorageRef(money);
+            printf("\nКоличество денег с продажи склада- %d\n", money);
+            printf("\nОбщее количество денег с продаж %d, количество продаж - %d\n", Storage::getAllmoney(), Storage::getSellcount());
+        }
+        catch (const std::runtime_error& e) {
+            std::cout << "Ошибка: " << e.what() << std::endl;
+        }
     }
+
 
     Plant findBestPlant() const {
         Plant bestPlant = Plant(); // Начальное значение "Нет растения"
@@ -242,98 +324,93 @@ public:
         }
         return bestPlant;
     }
-
 };
 
-
 int main() {
+
     setlocale(LC_ALL, "Russian");
+
     system("color F0");
 
     printf("Ферма\n");
 
-    printf("Введите количество полей:\n");
-    scanf("%d", &fields1);
-    Farm myFarm;
-    // Ввод данных о ферме
-    myFarm.input();
+    try {
+        printf("Введите количество полей : ");
+        fields1 = Help::inputIntegerInRange(2, 5); // Используем метод для ввода
 
-    // Вывод информации о ферме
-    myFarm.print();
+        Farm myFarm;
 
-    Plant bestPlant = myFarm.findBestPlant();
-    if (bestPlant.getPlantName() != "Нет растения") {
-        std::cout << "\nЛучшее растение: " << bestPlant.getPlantName()
-            << " с урожайностью: " << bestPlant.getPlantYield() << std::endl;
+        // Ввод данных о ферме
+        myFarm.input();
+
+        // Вывод информации о ферме
+        myFarm.print();
+
+        Plant bestPlant = myFarm.findBestPlant();
+        if (bestPlant.getPlantName() != "Нет растения") {
+            std::cout << "\nЛучшее растение: " << bestPlant.getPlantName()
+                << " с урожайностью: " << bestPlant.getPlantYield() << std::endl;
+        }
+        else {
+            std::cout << "\nНет засаженных растений." << std::endl;
+        }
+
+        // Выполняем основную логику 
+        myFarm.logic();
+
+        // Выводим обновленную информацию о ферме
+        myFarm.print();
+
+        myFarm.sell();
+        myFarm.print();
+        myFarm.sellref();
+        myFarm.print();
     }
-    else {
-        std::cout << "\nНет засаженных растений." << std::endl;
+    catch (const std::exception& e) {
+        std::cout << "Ошибка: " << e.what() << std::endl;
     }
-    // Выполняем основную логику 
-    myFarm.logic();
 
-    // Выводим обновленную информацию о ферме
-    myFarm.print();
-
-    myFarm.sell();
-
-    myFarm.print();
-
-    myFarm.sellref();
-
-    myFarm.print();
-
-
+    // Пример работы с двумерным массивом, использоваться в основной программе не будет
     /*
-    // Работа с динамическим массивом объектов класса
-    fields1 = 1;
-    Farm* dynamicFarms = new Farm[2];
-    printf("\nРабота с динамическим массивом объектов класса\n");
-    for (int i = 0; i < 2; ++i) {
-        std::cout << "\nВведите данные для фермы " << i + 1<< ":\n";
-        dynamicFarms[i].input();
-    }
-    for (int i = 0; i < 2; ++i) {
-        dynamicFarms[i].print();
-        dynamicFarms[i].logic();
-        dynamicFarms[i].print();
-    }
-    delete[] dynamicFarms;
+    const int rows = 2;  // Количество рядов на ферме
+    const int cols = 2;  // Количество столбцов на ферме
 
-    // Работа с массивом динамических объектов класса
-    printf("\nРабота с массивом динамических объектов класса\n");
-    Farm* dynamicFarmArray[2];
-    for (int i = 0; i < 2; ++i) {
-        dynamicFarmArray[i] = new Farm();
-        std::cout << "\nВведите данные для фермы " << i << ":\n";
-        dynamicFarmArray[i]->input();
+    // Создание двумерного массива объектов Field (2x2)
+    Field farm1[rows][cols];
+
+    // Ввод данных для каждого поля
+    std::cout << "Введите данные для полей фермы:" << std::endl;
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            std::cout << "\nВведите данные для поля [" << i + 1 << "][" << j + 1 << "]:" << std::endl;
+            farm1[i][j].inputField();
+        }
     }
-    for (int i = 0; i < 2; ++i) {
-        dynamicFarmArray[i]->print();
-        dynamicFarmArray[i]->logic();
-        dynamicFarmArray[i]->print();
-        delete dynamicFarmArray[i];
+
+    // Вывод данных о полях фермы
+    std::cout << "\nИнформация о полях фермы:" << std::endl;
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            std::cout << "\nИнформация о поле [" << i + 1 << "][" << j + 1 << "]:" << std::endl;
+            farm1[i][j].printField();
+        }
     }
+
+    // Поиск лучшего растения
+    Plant bestPlant;
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            if (farm1[i][j].isFieldPlanted()) {
+                Plant currentPlant = farm1[i][j].getPlant();
+                if (currentPlant.getPlantYield() > bestPlant.getPlantYield()) {
+                    bestPlant = currentPlant;
+                }
+            }
+        }
+    }
+
+    std::cout << "\nЛучшее растение на ферме: " << bestPlant.getPlantName()
+        << " с урожайностью: " << bestPlant.getPlantYield() << std::endl;
     */
-
-    /* Пример использования операторов +, ++
-    Plant plant1("Томаты", 60, 10, 50);
-    Plant plant2("Огурцы", 50, 15, 40);
-
-    // Используем оператор '+'
-    Plant combinedPlant = plant1 + plant2;
-    combinedPlant.printPlant();
-
-    // Используем префиксный оператор '++'
-    ++combinedPlant;
-    combinedPlant.printPlant();
-
-    // Используем постфиксный оператор '++'
-    Plant oldPlant = combinedPlant++;
-    oldPlant.printPlant(); // Выводим старое состояние
-    combinedPlant.printPlant(); // Выводим новое состояние
-
     return 0;
-
-    */
 }

@@ -33,6 +33,9 @@ class Storage {
     }
 
     public int sellStorage() {
+        if (plant.getPlantName() == "Нет растения") {
+            throw new RuntimeException("Невозможно продать урожай, склад пуст!");
+        }
         money = plant.getPlantYield() * plant.getPlantPrice();
         allmoney += money;
         sellcount++;

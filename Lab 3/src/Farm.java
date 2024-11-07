@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 class Farm {
     private Field[] fields;
     private Storage[] storage;
@@ -39,12 +37,15 @@ class Farm {
     }
 
     public void sell() {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("\nУрожай какого склада вы бы хотели продать?: ");
-        int sellnumber = sc.nextInt();
-        System.out.println("\nПродажа урожая со склада " + sellnumber);
-        money = storage[sellnumber - 1].sellStorage();
-        System.out.println("\n\nКоличество денег с продажи склада - " + money + "\n");
-        System.out.println("\nОбщее количество денег с продаж " + Storage.getAllmoney() + ", количество продаж - " + Storage.getSellcount() + "\n");
+        try {
+            System.out.print("\nУрожай какого склада вы бы хотели продать?: ");
+            int sellnumber = Help.readIntInRange(1, fields.length);
+            System.out.println("\nПродажа урожая со склада " + sellnumber);
+            money = storage[sellnumber - 1].sellStorage();
+            System.out.println("\n\nКоличество денег с продажи склада - " + money + "\n");
+            System.out.println("\nОбщее количество денег с продаж " + Storage.getAllmoney() + ", количество продаж - " + Storage.getSellcount() + "\n");
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());;
+        }
     }
 }

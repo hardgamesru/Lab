@@ -18,6 +18,18 @@ class Help {
         return value;
     }
 
+    public static int readIntInRange(int min, int max) {
+        int value;
+        while (true) {
+            value = readInt(); // Используем метод для ввода числа
+            if (value >= min && value <= max) {
+                return value;
+            } else {
+                System.out.println("Ошибка! Введите число в пределах от " + min + " до " + max + ".");
+            }
+        }
+    }
+
     // Метод для безопасного считывания строки
     public static String readString() {
         return scanner.nextLine();
