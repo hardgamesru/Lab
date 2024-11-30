@@ -1,27 +1,26 @@
-class Farm {
+class Farm implements FarmActions {
     private Field[] fields;
-    private Storage[] storage;
+    private Storage<AbstractPlant>[] storage;
     private int money;
 
     public Farm(int fields1) {
         fields = new Field[fields1];
         storage = new Storage[fields1];
         for (int i = 0; i < fields1; i++) {
-            fields[i] = new Field(i, new Plant(), false);
-            storage[i] = new Storage();
+            fields[i] = new Field(i);
+            storage[i] = new Storage<>();
         }
     }
 
     public void input() {
         for (Field field : fields) {
-            System.out.println("\nВведите данные для поля\n");
+            System.out.println("\nВведите данные для поля:");
             field.inputField();
         }
     }
 
     public void print() {
-        System.out.println("\nИнформация о ферме\n");
-        System.out.println("Поля:");
+        System.out.println("\nИнформация о ферме:");
         for (int i = 0; i < fields.length; i++) {
             fields[i].printField();
             storage[i].printStorage(i);
@@ -30,22 +29,21 @@ class Farm {
 
     public void logic() {
         for (int i = 0; i < fields.length; i++) {
-            storage[i].addPlant(fields[i].getPlant());
-            fields[i].harvestField();
+            storage[i].addPlant(fields[i].harvestField());
         }
-        System.out.println("\nПередача на склады\n");
+        System.out.println("\nПередача урожая на склады завершена.");
     }
 
     public void sell() {
         try {
-            System.out.print("\nУрожай какого склада вы бы хотели продать?: ");
-            int sellnumber = Help.readIntInRange(1, fields.length);
-            System.out.println("\nПродажа урожая со склада " + sellnumber);
-            money = storage[sellnumber - 1].sellStorage();
-            System.out.println("\n\nКоличество денег с продажи склада - " + money + "\n");
-            System.out.println("\nОбщее количество денег с продаж " + Storage.getAllmoney() + ", количество продаж - " + Storage.getSellcount() + "\n");
+            System.out.print("\nС какого склада продать урожай? ");
+            int sellNumber = Help.readIntInRange(1, fields.length);
+            int moneyEarned = storage[sellNumber - 1].sellStorage();
+            money += moneyEarned;
+            System.out.println("\nДеньги за продажу склада " + sellNumber + ": " + moneyEarned + " руб.");
+            System.out.println("Общий доход: " + money + " руб.");
         } catch (RuntimeException e) {
-            System.out.println(e.getMessage());;
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
 }

@@ -1,12 +1,13 @@
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Ферма");
+        System.out.println("Добро пожаловать на ферму!");
+
         while (true) {
             try {
                 System.out.print("Введите количество полей: ");
                 int fields1 = Help.readInt();
                 if (fields1 <= 0) {
-                    throw new Exception("Номер поля должен быть положительным!");
+                    throw new Exception("Количество полей должно быть положительным!");
                 }
                 Farm myFarm = new Farm(fields1);
                 myFarm.input();
@@ -19,7 +20,7 @@ public class Main {
                 myFarm.print();
                 break;
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Ошибка: " + e.getMessage());
             }
         }
         /*

@@ -3,25 +3,20 @@ import java.util.Scanner;
 class Help {
     private static Scanner scanner = new Scanner(System.in);
 
-    // Метод для безопасного считывания целого числа
     public static int readInt() {
-        int value = 0;
-        boolean valid = false;
-        while (!valid) {
+        while (true) {
             try {
-                value = Integer.parseInt(scanner.nextLine());
-                valid = true;
+                return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Ошибка: Введите целое число.");
             }
         }
-        return value;
     }
 
     public static int readIntInRange(int min, int max) {
         int value;
         while (true) {
-            value = readInt(); // Используем метод для ввода числа
+            value = readInt();
             if (value >= min && value <= max) {
                 return value;
             } else {
@@ -30,7 +25,6 @@ class Help {
         }
     }
 
-    // Метод для безопасного считывания строки
     public static String readString() {
         return scanner.nextLine();
     }

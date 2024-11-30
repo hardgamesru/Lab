@@ -1,58 +1,50 @@
 class Field {
     private int id;
-    private Plant plant;
-    private boolean isPlanted; // true если поле засажено, false если нет
+    private AbstractPlant plant;
+    private boolean isPlanted;
 
-    public Field(int id, Plant plant, boolean isPlanted) {
+    public Field(int id) {
         this.id = id;
-        this.plant = plant;
-        this.isPlanted = isPlanted;
-    }
-
-    public Field() {
-        this(0, new Plant(), false);
+        this.plant = new Plant();
+        this.isPlanted = false;
     }
 
     public void inputField() {
-        while (true) {
-            try {
-                System.out.print("Введите номер поля: ");
-                id = Help.readInt();
-                if (id <= 0) {
-                    throw new Exception("Номер поля должен быть положительным!");
-                }
-                System.out.print("Поле засажено? (1 - да, 0 - нет): ");
-                isPlanted = Help.readIntInRange(0, 1) == 1;
-                if (isPlanted) {
-                    plant.inputPlant();
-                } else {
-                    plant = new Plant();
-                }
-                break;
+        System.out.print("Введите номер поля: ");
+        id = Help.readInt();
+
+        System.out.print("Поле засажено? (1 - да, 0 - нет): ");
+        isPlanted = Help.readIntInRange(0, 1) == 1;
+
+        if (isPlanted) {
+            System.out.print("Выберите тип растения (1 - Обычное, 2 - Фрукт): ");
+            int choice = Help.readIntInRange(1, 2);
+
+            if (choice == 1) {
+                plant = new Plant();
+            } else {
+                plant = new Fruits();
             }
-            catch (Exception e){
-                System.out.println(e.getMessage());
-            }
+            plant.inputPlant();
+        } else {
+            plant = new Plant();
         }
     }
 
     public void printField() {
         System.out.print("\nПоле " + id + ": ");
         if (isPlanted) {
-            plant.printPlant();
+            System.out.println(plant.toString());
         } else {
-            System.out.println("Поле не засажено");
+            System.out.println("Поле не засажено.");
         }
     }
 
-    public int harvestField() {
+    public AbstractPlant harvestField() {
         if (isPlanted) {
             isPlanted = false;
+            return plant;
         }
-        return 0;
-    }
-
-    public Plant getPlant() {
-        return plant;
+        return new Plant();
     }
 }
