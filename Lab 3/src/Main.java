@@ -12,6 +12,14 @@ public class Main {
                 Farm myFarm = new Farm(fields1);
                 myFarm.input();
                 myFarm.print();
+                myFarm.sortFieldsByYield();
+                myFarm.print();
+                AbstractPlant bestPlant = myFarm.findBestPlant();
+                if (bestPlant != null) {
+                    System.out.println("\nЛучшее растение: " + bestPlant);
+                } else {
+                    System.out.println("\nНа ферме нет засаженных растений.");
+                }
                 myFarm.logic();
                 myFarm.print();
                 myFarm.sell();

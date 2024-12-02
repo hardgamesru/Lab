@@ -47,4 +47,16 @@ class Field {
         }
         return new Plant();
     }
+
+    public int getPlantYield() {
+        return plant.yield;
+    }
+
+    public AbstractPlant getPlant() {
+        return plant;
+    }
+
+    public boolean isPlanted() {
+        return isPlanted;
+    }
 }

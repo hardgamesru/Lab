@@ -4,7 +4,10 @@
 #include <string>
 #include <iostream>
 #include <limits>
+#include <vector> 
+#include <algorithm>
 #include <stdexcept>
+#include <list>
 
 int fields1;
 // Класс для помощи с вводом
@@ -48,6 +51,7 @@ public:
     virtual int getPlantYield() const = 0;
     virtual int getPlantPrice() const = 0;
     virtual ~AbstractPlant() = default; // Виртуальный деструктор для безопасного удаления через указатель базового класса
+    virtual AbstractPlant* clone() const = 0;
 };
 
 // Базовый класс Plant
@@ -97,6 +101,10 @@ public:
             << ", Цена: " << price << " руб.\n";
     }
 
+    AbstractPlant* clone() const override {
+        return new Plant(*this);
+    }
+
     std::string getPlantName() const override { return name; }
     int getPlantYield() const override { return yield; }
     int getPlantPrice() const override { return price; }
@@ -122,6 +130,10 @@ public:
         os << "Сезон: " << season << "\n";
     }
 
+    AbstractPlant* clone() const override {
+        return new Fruits(*this);
+    }
+
     std::string getSeason() const { return season; }
 };
 
@@ -138,6 +150,47 @@ public:
 
     ~Field() {
         delete plant;
+    }
+
+    // Конструктор копирования
+    Field(const Field& other)
+        : id(other.id), isPlanted(other.isPlanted) {
+        plant = other.plant ? other.plant->clone() : nullptr;
+    }
+
+    // Оператор копирующего присваивания
+    Field& operator=(const Field& other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        delete plant;
+        id = other.id;
+        isPlanted = other.isPlanted;
+        plant = other.plant ? other.plant->clone() : nullptr;
+
+        return *this;
+    }
+
+    // Конструктор перемещения
+    Field(Field&& other) noexcept
+        : id(other.id), plant(other.plant), isPlanted(other.isPlanted) {
+        other.plant = nullptr;
+    }
+
+    // Оператор перемещающего присваивания
+    Field& operator=(Field&& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+
+        delete plant;
+        id = other.id;
+        isPlanted = other.isPlanted;
+        plant = other.plant;
+        other.plant = nullptr;
+
+        return *this;
     }
 
     void inputField() {
@@ -187,6 +240,7 @@ public:
     bool isFieldPlanted() const { return isPlanted; }
     AbstractPlant* getPlant() const { return plant; }
 };
+
 
 // Шаблонный класс Storage (склад)
 template <typename T>
@@ -238,16 +292,12 @@ int Storage<T>::allmoney = 0;
 // Класс Farm (ферма)
 class Farm {
 private:
-    Field fields[5];
-    Storage<AbstractPlant> storage[5];
+    std::vector<Field> fields;
+    std::vector<Storage<AbstractPlant>> storage;
     int money;
 
 public:
-    Farm() {
-        for (int i = 0; i < fields1; i++) {
-            fields[i] = Field(i);
-        }
-    }
+    Farm(int numFields) : fields(numFields), storage(numFields), money(0) {}
 
     void input() {
         for (int i = 0; i < fields1; i++) {
@@ -290,33 +340,59 @@ public:
         }
     }
 
-    AbstractPlant* findBestPlant() {
-        AbstractPlant* bestPlant = nullptr;
-        int maxProfit = 0;
+    AbstractPlant* findBestPlantWithFind(const std::vector<Field>& fields) {
+        // Шаг 1: Создаем контейнер с указателями на растения
+        std::vector<AbstractPlant*> plants;
 
-        for (int i = 0; i < fields1; i++) {
-            AbstractPlant* currentPlant = fields[i].getPlant();
-            if (currentPlant != nullptr) {
-                int currentProfit = currentPlant->getPlantYield() * currentPlant->getPlantPrice();
-                if (currentProfit > maxProfit) {
-                    maxProfit = currentProfit;
-                    bestPlant = currentPlant;
-                }
+        for (const auto& field : fields) {
+            if (field.isFieldPlanted()) { // Поле засажено
+                plants.push_back(field.getPlant());
             }
         }
 
-        if (bestPlant) {
-            std::cout << "\nЛучшее растение:\n";
-            bestPlant->displayPlant(std::cout);
-            std::cout << "Ожидаемый доход: " << maxProfit << " руб.\n";
-        }
-        else {
+        // Если растений нет, возвращаем nullptr
+        if (plants.empty()) {
             std::cout << "\nНет доступных растений.\n";
+            return nullptr;
         }
 
-        return bestPlant;
+        // Шаг 2: Найти максимальный доход
+        auto maxPlantIt = std::max_element(plants.begin(), plants.end(), [](AbstractPlant* a, AbstractPlant* b) {
+            return (a->getPlantYield() * a->getPlantPrice()) < (b->getPlantYield() * b->getPlantPrice());
+            });
+
+        // Шаг 3: Найти растение с максимальным доходом через std::find
+        auto bestPlantIt = std::find(plants.begin(), plants.end(), *maxPlantIt);
+
+        // Если найдено, возвращаем указатель на растение
+        if (bestPlantIt != plants.end()) {
+            AbstractPlant* bestPlant = *bestPlantIt;
+            std::cout << "\nЛучшее растение:\n";
+            bestPlant->displayPlant(std::cout);
+            std::cout << "Ожидаемый доход: " << (bestPlant->getPlantYield() * bestPlant->getPlantPrice()) << " руб.\n";
+            return bestPlant;
+        }
+
+        return nullptr;
+    }
+
+    void findBestPlantWithFind() {
+        AbstractPlant* bestPlant = findBestPlantWithFind(fields);
+
+        if (!bestPlant) {
+            std::cout << "\nРастение с максимальным доходом не найдено.\n";
+        }
+    }
+
+    static bool compare(const Field& a, const Field& b) {
+        return a.getPlant()->getPlantYield() > b.getPlant()->getPlantYield();
+    }
+    void sortFieldsByYield() {
+        std::sort(begin(fields), end(fields), compare);
+        std::cout << "\nПоля отсортированы по урожайности.\n";
     }
 };
+
 
 int main() {
     setlocale(LC_ALL, "Russian");
@@ -327,9 +403,12 @@ int main() {
         std::cout << "Введите количество полей (2-5): ";
         fields1 = Help::inputIntegerInRange(2, 5);
 
-        Farm myFarm;
+        Farm myFarm(fields1);
 
         myFarm.input();
+        myFarm.print();
+        myFarm.findBestPlantWithFind();
+        myFarm.sortFieldsByYield();
         myFarm.print();
         myFarm.logic();
         myFarm.print();
